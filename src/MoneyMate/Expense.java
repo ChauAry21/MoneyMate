@@ -1,6 +1,7 @@
 package MoneyMate;
 
 public class Expense {
+    private int id;
     private String date;
     private String category;
     private double amount;
@@ -12,10 +13,20 @@ public class Expense {
      * @param amount     the amount of the expense.
      *
      * */
-    public Expense(String date, String category, double amount) {
+    public Expense(int id, String date, String category, double amount) {
+        this.id = id;
         this.date = date;
         this.category = category;
         this.amount = amount;
+    }
+
+    /**
+     * Gets the id of the expense.
+     *
+     * @return the id of the expense.
+     * */
+    public int getId() {
+        return id;
     }
 
     /**
