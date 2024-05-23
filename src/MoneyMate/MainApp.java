@@ -32,11 +32,10 @@ public class MainApp extends JFrame {
         cardLayout.show(mainPanel, "Login");
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
+        setSize(800, 600);
         setLocationRelativeTo(null);
         setVisible(true);
     }
-
 
     public void showPanel(String name) {
         cardLayout.show(mainPanel, name);
@@ -57,6 +56,10 @@ public class MainApp extends JFrame {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(MainApp::new);
     }
 }
 

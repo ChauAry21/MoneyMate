@@ -17,6 +17,7 @@ public class LoginPanel extends JPanel {
         this.conn = conn;
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding
 
         JLabel usernameLabel = new JLabel("Username:");
         gbc.gridx = 0;
@@ -75,3 +76,4 @@ public class LoginPanel extends JPanel {
         });
     }
 }
+
