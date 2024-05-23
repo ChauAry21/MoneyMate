@@ -13,6 +13,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * The expense manager panel for the MoneyMate application.
+ */
 public class ExpenseManagerPanel extends JPanel {
     private Connection conn;
     private MainApp mainApp;
@@ -20,6 +23,12 @@ public class ExpenseManagerPanel extends JPanel {
     private DefaultTableModel tableModel;
     private int userId;
 
+    /**
+     * Constructs the expense manager panel.
+     *
+     * @param mainApp the main application instance
+     * @param conn    the database connection
+     */
     public ExpenseManagerPanel(MainApp mainApp, Connection conn) {
         this.mainApp = mainApp;
         this.conn = conn;
@@ -72,10 +81,18 @@ public class ExpenseManagerPanel extends JPanel {
         });
     }
 
+    /**
+     * Sets the user ID.
+     *
+     * @param userId the user ID
+     */
     public void setUserId(int userId) {
         this.userId = userId;
     }
 
+    /**
+     * Loads the user's expenses from the database.
+     */
     private void loadExpenses() {
         tableModel.setRowCount(0);
         String sql = "SELECT * FROM expenses WHERE user_id = ?";
@@ -96,6 +113,9 @@ public class ExpenseManagerPanel extends JPanel {
         }
     }
 
+    /**
+     * Adds a new expense to the database.
+     */
     private void addExpense() {
         JFormattedTextField dateField = new JFormattedTextField(new SimpleDateFormat("yyyy-MM-dd"));
         JTextField categoryField = new JTextField();
@@ -133,6 +153,9 @@ public class ExpenseManagerPanel extends JPanel {
         }
     }
 
+    /**
+     * Deletes the selected expense from the database.
+     */
     private void deleteExpense() {
         int selectedRow = expenseTable.getSelectedRow();
         if (selectedRow != -1) {

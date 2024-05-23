@@ -6,12 +6,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 
+/**
+ * The registration panel for the MoneyMate application.
+ */
 public class RegistrationPanel extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private MainApp mainApp;
     private Connection conn;
 
+    /**
+     * Constructs the registration panel.
+     *
+     * @param mainApp the main application instance
+     * @param conn    the database connection
+     */
     public RegistrationPanel(MainApp mainApp, Connection conn) {
         this.mainApp = mainApp;
         this.conn = conn;
