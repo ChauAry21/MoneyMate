@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="src">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../../../../Java/jdk-22.0.1/jBCrypt-0.4/src" />
+    </SOURCES>
+  </library>
+</component>
