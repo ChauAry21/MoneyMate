@@ -8,9 +8,9 @@ import java.sql.SQLException;
  * Utility class for establishing a connection to the database.
  */
 public class SQLreg {
-    private static final String URL = "jdbc:mysql://localhost:3306/moneymate";
+    private static final String URL = "jdbc:mysql://localhost:3306/Your Database";
     private static final String USER = "root";
-    private static final String PASSWORD = "ValentinCampa1919";
+    private static final String PASSWORD = "Your Password";
 
     /**
      * Establishes and returns a connection to the MoneyMate database.
