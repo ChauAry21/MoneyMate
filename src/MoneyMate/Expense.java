@@ -13,7 +13,7 @@ public class Expense {
      * @param amount     the amount of the expense.
      *
      * */
-    public Expense(int id, String date, String category, double amount) {
+    public Expense(String date, String category, double amount) {
         this.id = id;
         this.date = date;
         this.category = category;

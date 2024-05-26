@@ -10,6 +10,10 @@ public class ExpenseManager {
      *
      * @param expense the expense to add.
      */
+
+    String URL = "jdbc:mysql://127.0.0.1:3306/?user=moneymate";
+    String USER = "moneymate";
+    String PASSWORD = "moneymate";
     public void addExpense(Expense expense) {
         String query = "INSERT INTO expenses (date, category, amount) VALUES (?, ?, ?)";
 
@@ -69,5 +73,8 @@ public class ExpenseManager {
 
         return expenses;
     }
+
+
+
 }
-}
+
