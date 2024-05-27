@@ -14,6 +14,7 @@ public class LoginGui {
     private JButton createUserButton;
     private JButton loginButton;
     private JLabel messageLabel;
+    private JLabel logoLabel;
 
     public LoginGui() {
         createFrame();
@@ -23,11 +24,25 @@ public class LoginGui {
     }
 
     private void createFrame() {
-        frame = new JFrame("User Management");
+        frame = new JFrame("MoneyMate - User Management");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(300, 200);
+        frame.setSize(400, 500); // Adjusted size to accommodate logo
         frame.setLocationRelativeTo(null);
+        addLogo(); // Method call to add logo
     }
+
+    private void addLogo() {
+        try {
+            ImageIcon logoIcon = new ImageIcon(getClass().getResource("/logo.png"));
+            logoLabel = new JLabel(logoIcon);
+            logoLabel.setHorizontalAlignment(JLabel.CENTER);
+            frame.getContentPane().add(logoLabel, BorderLayout.NORTH);
+        } catch (Exception e) {
+            System.err.println("Error loading logo: " + e.getMessage());
+        }
+    }
+
+
 
     private void createFields() {
         usernameLabel = new JLabel("Username:");
@@ -41,17 +56,56 @@ public class LoginGui {
 
     private void createLayout() {
         Container container = frame.getContentPane();
-        container.setLayout(new GridLayout(6, 1));
+        container.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
-        container.add(usernameLabel);
-        container.add(usernameField);
-        container.add(passwordLabel);
-        container.add(passwordField);
-        container.add(createUserButton);
-        container.add(loginButton);
-        container.add(messageLabel);
-        UserHandler.createUsersTableIfNotExists();
+        // Logo placement
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(10, 10, 10, 10); // Add some padding around the logo
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        container.add(logoLabel, gbc);
+
+        // Username label and field
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(5, 10, 5, 10); // Padding for input fields
+        gbc.anchor = GridBagConstraints.LINE_END;
+        container.add(usernameLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        container.add(usernameField, gbc);
+
+        // Password label and field
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        container.add(passwordLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        container.add(passwordField, gbc);
+
+        // Buttons
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        container.add(createUserButton, gbc);
+
+        gbc.gridx = 1;
+        container.add(loginButton, gbc);
+
+        // Message label
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        container.add(messageLabel, gbc);
     }
+
 
     private void createListeners() {
         createUserButton.addActionListener(new ActionListener() {
@@ -76,7 +130,7 @@ public class LoginGui {
 
                 if (UserHandler.checkUser(username, password)) {
                     JOptionPane.showMessageDialog(frame, "User exists and credentials are correct.");
-                    frame.dispose();  // Close the login GUI
+                    frame.dispose(); // Close the login GUI
                     ExpenseManager expenseManager = new ExpenseManager();
                     ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
                     expenseTrackerGUI.show();
