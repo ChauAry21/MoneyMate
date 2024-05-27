@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExpenseManager {
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/moneymate";
+    private static final String USER = "moneymate";
+    private static final String PASSWORD = "moneymate";
+
     /**
      * Adds a new expense to the database.
      *
      * @param expense the expense to add.
      */
-
-    String URL = "jdbc:mysql://127.0.0.1:3306/?user=moneymate";
-    String USER = "moneymate";
-    String PASSWORD = "moneymate";
     public void addExpense(Expense expense) {
         String query = "INSERT INTO expenses (date, category, amount) VALUES (?, ?, ?)";
 
@@ -55,17 +55,18 @@ public class ExpenseManager {
      */
     public List<Expense> viewExpenses() {
         List<Expense> expenses = new ArrayList<>();
-        String query = "SELECT * FROM expenses";
+        String query = "SELECT id, date, category, amount FROM expenses";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
+                int id = rs.getInt("id");
                 String date = rs.getDate("date").toString();
                 String category = rs.getString("category");
                 double amount = rs.getDouble("amount");
-                expenses.add(new Expense(date, category, amount));
+                expenses.add(new Expense(id, date, category, amount));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,8 +74,4 @@ public class ExpenseManager {
 
         return expenses;
     }
-
-
-
 }
-
