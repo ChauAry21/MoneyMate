@@ -1,11 +1,19 @@
 package MoneyMate;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
+/**
+ * A graphical user interface for user login and creation.
+ */
 public class LoginGui {
+    /**
+     * all necessary fields for LoginGui.java
+     */
     public JFrame frame;
     private JLabel usernameLabel;
     private JTextField usernameField;
@@ -16,6 +24,9 @@ public class LoginGui {
     private JLabel messageLabel;
     private JLabel logoLabel;
 
+    /**
+     * Compile the GUI components.
+     */
     public LoginGui() {
         createFrame();
         createFields();
@@ -23,17 +34,35 @@ public class LoginGui {
         createListeners();
     }
 
+    /**
+     * Creates the main frame of the GUI.
+     */
     private void createFrame() {
         frame = new JFrame("MoneyMate - User Management");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 500); // Adjusted size to accommodate logo
         frame.setLocationRelativeTo(null);
         addLogo(); // Method call to add logo
+
+        Image iconImage = null;
+        try {
+            iconImage = ImageIO.read(getClass().getResourceAsStream("logo.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (iconImage != null) {
+            frame.setIconImage(iconImage);
+        }
+
     }
 
+    /**
+     * Adds the application logo to the GUI.
+     */
     private void addLogo() {
         try {
-            ImageIcon logoIcon = new ImageIcon(getClass().getResource("/logo.png"));
+            ImageIcon logoIcon = new ImageIcon(getClass().getResource("logo.png"));
             logoLabel = new JLabel(logoIcon);
             logoLabel.setHorizontalAlignment(JLabel.CENTER);
             frame.getContentPane().add(logoLabel, BorderLayout.NORTH);
@@ -42,8 +71,9 @@ public class LoginGui {
         }
     }
 
-
-
+    /**
+     * Creates the GUI fields (labels, text fields, buttons, etc.).
+     */
     private void createFields() {
         usernameLabel = new JLabel("Username:");
         usernameField = new JTextField(15);
@@ -54,6 +84,9 @@ public class LoginGui {
         messageLabel = new JLabel("");
     }
 
+    /**
+     * Creates the layout of the GUI components.
+     */
     private void createLayout() {
         Container container = frame.getContentPane();
         container.setLayout(new GridBagLayout());
@@ -106,7 +139,9 @@ public class LoginGui {
         container.add(messageLabel, gbc);
     }
 
-
+    /**
+     * Creates the event listeners for the GUI components.
+     */
     private void createListeners() {
         createUserButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -129,10 +164,9 @@ public class LoginGui {
                 String password = new String(passwordArray);
 
                 if (UserHandler.checkUser(username, password)) {
-                    JOptionPane.showMessageDialog(frame, "User exists and credentials are correct.");
                     frame.dispose(); // Close the login GUI
                     ExpenseManager expenseManager = new ExpenseManager();
-                    ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
+                    ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager, usernameField.getText());
                     expenseTrackerGUI.show();
                 } else {
                     JOptionPane.showMessageDialog(frame, "User does not exist or credentials are incorrect.");
@@ -145,6 +179,11 @@ public class LoginGui {
         frame.setVisible(true);
     }
 
+    /**
+     * The main class for the application.
+     *
+     * @param args the command-line arguments
+     */
     public static void main(String[] args) {
         LoginGui loginGui = new LoginGui();
         loginGui.show();

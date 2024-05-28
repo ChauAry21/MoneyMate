@@ -7,10 +7,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Handles user-related operations for the MoneyMate application.
+ */
 public class UserHandler {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/moneymate";
     private static final String DB_USER = "moneymate";
     private static final String DB_PASSWORD = "moneymate";
+
+    private static String currentUser;
+
+
+    public static String getDbUrl() {
+        return DB_URL;
+    }
+    public static String getDbUser() {
+        return DB_USER;
+    }
+    public static String getDbPassword() {
+        return DB_PASSWORD;
+    }
 
     // Method to ensure the 'users' table exists
     public static void createUsersTableIfNotExists() {
@@ -46,6 +62,7 @@ public class UserHandler {
 
     // Method to check if a user exists
     public static boolean checkUser(String username, String password) {
+        currentUser = username;
         createUsersTableIfNotExists();  // Ensure table exists
         String sql = "SELECT COUNT(*) FROM users WHERE username = ? AND password = ?";
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -64,5 +81,9 @@ public class UserHandler {
             System.err.println("Error checking user: " + e.getMessage());
             return false;
         }
+    }
+
+    public static String getCurrentUser() {
+        return currentUser;
     }
 }

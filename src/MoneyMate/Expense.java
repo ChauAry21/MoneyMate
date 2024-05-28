@@ -1,20 +1,20 @@
 package MoneyMate;
 
 public class Expense {
-    private int id;
+    private String user;
     private String date;
     private String category;
     private double amount;
 
     /**
      * Constructs a new Expense.
-     * @param id         the ID of the expense.
+     * @param user       the User who created the expense.
      * @param date       the date of the expense.
      * @param category   the category of the expense.
      * @param amount     the amount of the expense.
      */
-    public Expense(int id, String date, String category, double amount) {
-        this.id = id;
+    public Expense(String user, String date, String category, double amount) {
+        this.user = user;
         this.date = date;
         this.category = category;
         this.amount = amount;
@@ -25,8 +25,8 @@ public class Expense {
      *
      * @return the id of the expense.
      */
-    public int getId() {
-        return id;
+    public String getUser() {
+        return user;
     }
 
     /**

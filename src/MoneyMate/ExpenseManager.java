@@ -5,24 +5,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExpenseManager {
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/moneymate";
-    private static final String USER = "moneymate";
-    private static final String PASSWORD = "moneymate";
+
+    private String user;
 
     /**
      * Adds a new expense to the database.
      *
      * @param expense the expense to add.
+     * @param username the username of the user adding the expense.
      */
-    public void addExpense(Expense expense) {
-        String query = "INSERT INTO expenses (date, category, amount) VALUES (?, ?, ?)";
+    public void addExpense(Expense expense, String username) {
+        user = username;
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        String query = "INSERT INTO expenses (username, date, category, amount) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(UserHandler.getDbUrl(), UserHandler.getDbUser(), UserHandler.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setDate(1, Date.valueOf(expense.getDate()));
-            stmt.setString(2, expense.getCategory());
-            stmt.setDouble(3, expense.getAmount());
+            stmt.setString(1, username);
+            stmt.setDate(2, Date.valueOf(expense.getDate()));
+            stmt.setString(3, expense.getCategory());
+            stmt.setDouble(4, expense.getAmount());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -38,10 +41,23 @@ public class ExpenseManager {
     public void deleteExpense(int id) {
         String query = "DELETE FROM expenses WHERE id = ?";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = DriverManager.getConnection(UserHandler.getDbUrl(), UserHandler.getDbUser(), UserHandler.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteExpensesByAmount(double amount) {
+        String query = "DELETE FROM expenses WHERE amount = ?";
+
+        try (Connection conn = DriverManager.getConnection(UserHandler.getDbUrl(), UserHandler.getDbUser(), UserHandler.getDbPassword());
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDouble(1, amount);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,18 +71,22 @@ public class ExpenseManager {
      */
     public List<Expense> viewExpenses() {
         List<Expense> expenses = new ArrayList<>();
-        String query = "SELECT id, date, category, amount FROM expenses";
+        String query = "SELECT * FROM expenses WHERE username = " + UserHandler.getCurrentUser();
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DriverManager.getConnection(UserHandler.getDbUrl(), UserHandler.getDbUser(), UserHandler.getDbPassword());
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String date = rs.getDate("date").toString();
-                String category = rs.getString("category");
-                double amount = rs.getDouble("amount");
-                expenses.add(new Expense(id, date, category, amount));
+            stmt.setString(1, UserHandler.getCurrentUser());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    String username = rs.getString("username");
+                    String date = rs.getDate("date").toString();
+                    String category = rs.getString("category");
+                    double amount = rs.getDouble("amount");
+                    expenses.add(new Expense(username, date, category, amount));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
