@@ -2,8 +2,6 @@ package MoneyMate;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginGui {
     public JFrame frame;
@@ -13,6 +11,7 @@ public class LoginGui {
     private JLabel passwordLabel;
     private JButton createUserButton;
     private JButton loginButton;
+    private JButton forgotPasswordButton;
     private JLabel messageLabel;
     private JLabel logoLabel;
 
@@ -26,9 +25,9 @@ public class LoginGui {
     private void createFrame() {
         frame = new JFrame("MoneyMate - User Management");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 500); // Adjusted size to accommodate logo
+        frame.setSize(400, 500);
         frame.setLocationRelativeTo(null);
-        addLogo(); // Method call to add logo
+        addLogo();
     }
 
     private void addLogo() {
@@ -42,8 +41,6 @@ public class LoginGui {
         }
     }
 
-
-
     private void createFields() {
         usernameLabel = new JLabel("Username:");
         usernameField = new JTextField(15);
@@ -51,6 +48,7 @@ public class LoginGui {
         passwordField = new JPasswordField(15);
         createUserButton = new JButton("Create User");
         loginButton = new JButton("Login");
+        forgotPasswordButton = new JButton("Forgot Password?");
         messageLabel = new JLabel("");
     }
 
@@ -63,14 +61,14 @@ public class LoginGui {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(10, 10, 10, 10); // Add some padding around the logo
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         container.add(logoLabel, gbc);
 
         // Username label and field
         gbc.gridy = 1;
         gbc.gridwidth = 1;
-        gbc.insets = new Insets(5, 10, 5, 10); // Padding for input fields
+        gbc.insets = new Insets(5, 10, 5, 10);
         gbc.anchor = GridBagConstraints.LINE_END;
         container.add(usernameLabel, gbc);
 
@@ -98,44 +96,55 @@ public class LoginGui {
         gbc.gridx = 1;
         container.add(loginButton, gbc);
 
-        // Message label
+        // Forgot Password Button
         gbc.gridx = 0;
         gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        container.add(forgotPasswordButton, gbc);
+
+        // Message label
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         container.add(messageLabel, gbc);
     }
 
-
     private void createListeners() {
-        createUserButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                char[] passwordArray = passwordField.getPassword();
-                String password = new String(passwordArray);
-
-                if (UserHandler.createUser(username, password)) {
-                    JOptionPane.showMessageDialog(frame, "User created successfully.");
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Error: User could not be created.");
-                }
+        createUserButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            char[] passwordArray = passwordField.getPassword();
+            String password = new String(passwordArray);
+            if (UserHandler.createUser(username, password)) {
+                JOptionPane.showMessageDialog(frame, "User created successfully.");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Error: User could not be created.");
             }
         });
 
-        loginButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getText();
-                char[] passwordArray = passwordField.getPassword();
-                String password = new String(passwordArray);
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            char[] passwordArray = passwordField.getPassword();
+            String password = new String(passwordArray);
+            if (UserHandler.checkUser(username, password)) {
+                JOptionPane.showMessageDialog(frame, "User exists and credentials are correct.");
+                frame.dispose(); // Close the login GUI
+                ExpenseManager expenseManager = new ExpenseManager();
+                ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
+                expenseTrackerGUI.show();
+            } else {
+                JOptionPane.showMessageDialog(frame, "User does not exist or credentials are incorrect.");
+            }
+        });
 
-                if (UserHandler.checkUser(username, password)) {
-                    JOptionPane.showMessageDialog(frame, "User exists and credentials are correct.");
-                    frame.dispose(); // Close the login GUI
-                    ExpenseManager expenseManager = new ExpenseManager();
-                    ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
-                    expenseTrackerGUI.show();
+        forgotPasswordButton.addActionListener(e -> {
+            String username = JOptionPane.showInputDialog(frame, "Enter your username for password reset:");
+            if (username != null && !username.isEmpty()) {
+                if (UserHandler.initiatePasswordReset(username)) {
+                    JOptionPane.showMessageDialog(frame, "Password reset instructions have been sent to your email.");
                 } else {
-                    JOptionPane.showMessageDialog(frame, "User does not exist or credentials are incorrect.");
+                    JOptionPane.showMessageDialog(frame, "Error: Unable to send password reset instructions.");
                 }
             }
         });
