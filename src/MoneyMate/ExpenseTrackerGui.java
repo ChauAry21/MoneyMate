@@ -1,34 +1,18 @@
 package MoneyMate;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import javax.swing.table.DefaultTableModel;
 
 public class ExpenseTrackerGui {
     private JFrame frame;
-    private JLabel dateLabel;
-    private JLabel categoryLabel;
-    private JLabel amountLabel;
-    private JButton addExpenseButton;
-    private JButton generateReportButton;
-    private JButton viewExpensesButton;
-    private JButton deleteExpenseButton;
-    private JButton logoutButton;
-    private JTextField dateField;
-    private JTextField categoryField;
-    private JTextField amountField;
-    private ExpenseManager expenseManager;
+    private JTextField dateField, categoryField, amountField;
+    private JButton addExpenseButton, generateReportButton, viewExpensesButton, deleteExpenseButton, logoutButton;
     private JTable expensesTable;
     private DefaultTableModel tableModel;
-    private JTable outputTable;
-    private DefaultTableModel outputTableModel;
+    private ExpenseManager expenseManager;
 
     public ExpenseTrackerGui(ExpenseManager expenseManager) {
         this.expenseManager = expenseManager;
@@ -39,37 +23,36 @@ public class ExpenseTrackerGui {
     }
 
     private void createFrame() {
-        frame = new JFrame("Expense Tracker");
+        frame = new JFrame("MoneyMate - Expense Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 400);
+        frame.setSize(800, 600); // Adjusted size to 800x600
         frame.setLocationRelativeTo(null);
     }
 
     private void createFields() {
-        dateLabel = new JLabel("Date (YYYY-MM-DD):");
         dateField = new JTextField(15);
-        categoryLabel = new JLabel("Category:");
         categoryField = new JTextField(15);
-        amountLabel = new JLabel("Amount:");
         amountField = new JTextField(15);
         addExpenseButton = new JButton("Add Expense");
         generateReportButton = new JButton("Generate Report");
         viewExpensesButton = new JButton("View Expenses");
         deleteExpenseButton = new JButton("Delete Expense");
         logoutButton = new JButton("Logout");
+        
+        tableModel = new DefaultTableModel(new String[]{"ID", "Date", "Category", "Amount"}, 0);
+        expensesTable = new JTable(tableModel);
     }
 
     private void createLayout() {
         Container container = frame.getContentPane();
         container.setLayout(new BorderLayout());
 
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(3, 2));
-        inputPanel.add(dateLabel);
+        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
+        inputPanel.add(new JLabel("Date (YYYY-MM-DD):"));
         inputPanel.add(dateField);
-        inputPanel.add(categoryLabel);
+        inputPanel.add(new JLabel("Category:"));
         inputPanel.add(categoryField);
-        inputPanel.add(amountLabel);
+        inputPanel.add(new JLabel("Amount:"));
         inputPanel.add(amountField);
 
         JPanel buttonPanel = new JPanel();
@@ -82,14 +65,9 @@ public class ExpenseTrackerGui {
 
         container.add(inputPanel, BorderLayout.NORTH);
         container.add(buttonPanel, BorderLayout.CENTER);
+        container.add(new JScrollPane(expensesTable), BorderLayout.SOUTH);
 
-        tableModel = new DefaultTableModel(new String[]{"Date", "Category", "Amount"}, 0);
-        expensesTable = new JTable(tableModel);
-        container.add(new JScrollPane(expensesTable), BorderLayout.EAST);
-
-        outputTableModel = new DefaultTableModel(new String[]{"Category", "Date", "Amount"}, 0);
-        outputTable = new JTable(outputTableModel);
-        container.add(new JScrollPane(outputTable), BorderLayout.SOUTH);
+        frame.pack(); // Ensure components are sized correctly
     }
 
     private void createListeners() {
@@ -100,140 +78,73 @@ public class ExpenseTrackerGui {
                 double amount = Double.parseDouble(amountField.getText());
 
                 try {
-                    Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "password");
-                    String sql = "INSERT INTO expenses(date, category, amount) VALUES(?, ?, ?)";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    pstmt.setString(1, date);
-                    pstmt.setString(2, category);
-                    pstmt.setDouble(3, amount);
-                    pstmt.executeUpdate();
-                    pstmt.close();
-                    conn.close();
-
+                    int id = generateUniqueId(); // Implement this method as needed
+                    Expense expense = new Expense(id, date, category, amount);
+                    expenseManager.addExpense(expense);
                     JOptionPane.showMessageDialog(frame, "Expense added successfully.");
-                } catch (SQLException ex) {
-                    System.out.println("SQLException: " + ex.getMessage());
-                    System.out.println("SQLState: " + ex.getSQLState());
-                    System.out.println("VendorError: " + ex.getErrorCode());
-                }
-
-                refreshTable();
-            }
-        });
-
-        generateReportButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                outputTableModel.setRowCount(0);
-
-                try {
-                    Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "password");
-                    String sql = "SELECT * FROM expenses";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    ResultSet rs = pstmt.executeQuery();
-
-                    while (rs.next()) {
-                        String category = rs.getString("category");
-                        String date = rs.getString("date");
-                        double amount = rs.getDouble("amount");
-                        outputTableModel.addRow(new Object[]{category, date, amount});
-                    }
-
-                    rs.close();
-                    pstmt.close();
-                    conn.close();
-                } catch (SQLException ex) {
-                    System.out.println("SQLException: " + ex.getMessage());
-                    System.out.println("SQLState: " + ex.getSQLState());
-                    System.out.println("VendorError: " + ex.getErrorCode());
+                    refreshTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error adding expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
         viewExpensesButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                outputTableModel.setRowCount(0);
-
-                try {
-                    Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "password");
-                    String sql = "SELECT * FROM expenses";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    ResultSet rs = pstmt.executeQuery();
-
-                    while (rs.next()) {
-                        String category = rs.getString("category");
-                        String date = rs.getString("date");
-                        double amount = rs.getDouble("amount");
-                        tableModel.addRow(new Object[]{date, category, amount});
-                    }
-
-                    rs.close();
-                    pstmt.close();
-                    conn.close();
-                } catch (SQLException ex) {
-                    System.out.println("SQLException: " + ex.getMessage());
-                    System.out.println("SQLState: " + ex.getSQLState());
-                    System.out.println("VendorError: " + ex.getErrorCode());
-                }
+                refreshTable();
             }
         });
 
         deleteExpenseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "password");
-                    String sql = "DELETE FROM expenses WHERE category = ?";
-                    PreparedStatement pstmt = conn.prepareStatement(sql);
-                    pstmt.setString(1, categoryField.getText());
-                    pstmt.executeUpdate();
-                    pstmt.close();
-                    conn.close();
-
+                    int id = Integer.parseInt(JOptionPane.showInputDialog(frame, "Enter ID of expense to delete:"));
+                    expenseManager.deleteExpense(id);
                     JOptionPane.showMessageDialog(frame, "Expense deleted successfully.");
-                } catch (SQLException ex) {
-                    System.out.println("SQLException: " + ex.getMessage());
-                    System.out.println("SQLState: " + ex.getSQLState());
-                    System.out.println("VendorError: " + ex.getErrorCode());
+                    refreshTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error deleting expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                refreshTable();
             }
         });
 
         logoutButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new LoginGui();
+                new LoginGui().show();
+            }
+        });
+
+        generateReportButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(frame, "Report generated (functionality to be implemented).");
             }
         });
     }
 
-    public void refreshTable() {
+    private void refreshTable() {
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/expense_tracker", "root", "password");
-            String sql = "SELECT * FROM expenses";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-
+            java.util.List<Expense> expenses = expenseManager.viewExpenses();
             tableModel.setRowCount(0);
-
-            while (rs.next()) {
-                String date = rs.getString("date");
-                String category = rs.getString("category");
-                double amount = rs.getDouble("amount");
-                tableModel.addRow(new Object[]{date, category, amount});
+            for (Expense expense : expenses) {
+                tableModel.addRow(new Object[]{expense.getId(), expense.getDate(), expense.getCategory(), expense.getAmount()});
             }
-
-            rs.close();
-            pstmt.close();
-            conn.close();
-        } catch (SQLException ex) {
-            System.out.println("SQLException: " + ex.getMessage());
-            System.out.println("SQLState: " + ex.getSQLState());
-            System.out.println("VendorError: " + ex.getErrorCode());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(frame, "Error retrieving expenses: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private int generateUniqueId() {
+        return (int) (Math.random() * 10000); // Simple random ID generator for example purposes
     }
 
     public void show() {
         frame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        ExpenseManager expenseManager = new ExpenseManager();
+        ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
+        expenseTrackerGUI.show();
     }
 }
