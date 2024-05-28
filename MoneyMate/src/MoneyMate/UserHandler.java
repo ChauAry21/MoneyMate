@@ -16,6 +16,7 @@ public class UserHandler {
                 "id INT(11) NOT NULL AUTO_INCREMENT, " +
                 "username VARCHAR(50) NOT NULL, " +
                 "password VARCHAR(64) NOT NULL, " +
+                "email VARCHAR(100), " + // Ensure there's an email column
                 "PRIMARY KEY (id))";
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement statement = connection.createStatement()) {
@@ -60,7 +61,6 @@ public class UserHandler {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 int count = resultSet.getInt(1);
-                System.out.println("User check: " + username + " - Count: " + count);  // Debug statement
                 return count > 0;
             } else {
                 return false;
@@ -69,5 +69,31 @@ public class UserHandler {
             System.err.println("Error checking user: " + e.getMessage());
             return false;
         }
+    }
+
+    // Method to initiate a password reset
+    public static boolean initiatePasswordReset(String username) {
+        String sql = "SELECT email FROM users WHERE username = ?";
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String email = resultSet.getString("email");
+                sendEmail(email, "Password Reset", "Please follow the instructions to reset your password."); // Implement sendEmail
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            System.err.println("Error in initiating password reset: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Placeholder method to simulate sending an email
+    private static void sendEmail(String email, String subject, String message) {
+        System.out.println("Sending email to: " + email);
+        System.out.println("Subject: " + subject);
+        System.out.println("Message: " + message);
     }
 }
