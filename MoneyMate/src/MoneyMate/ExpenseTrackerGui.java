@@ -1,9 +1,10 @@
 package MoneyMate;
 
 import javax.swing.*;
-import java.awt.*;
-
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ExpenseTrackerGui {
     private JFrame frame;
@@ -22,9 +23,9 @@ public class ExpenseTrackerGui {
     }
 
     private void createFrame() {
-        frame = new JFrame("Expense Tracker");
+        frame = new JFrame("MoneyMate - Expense Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 400);
+        frame.setSize(800, 600); // Adjusted size to 800x600
         frame.setLocationRelativeTo(null);
     }
 
@@ -37,7 +38,7 @@ public class ExpenseTrackerGui {
         viewExpensesButton = new JButton("View Expenses");
         deleteExpenseButton = new JButton("Delete Expense");
         logoutButton = new JButton("Logout");
-
+        
         tableModel = new DefaultTableModel(new String[]{"ID", "Date", "Category", "Amount"}, 0);
         expensesTable = new JTable(tableModel);
     }
@@ -55,6 +56,7 @@ public class ExpenseTrackerGui {
         inputPanel.add(amountField);
 
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(addExpenseButton);
         buttonPanel.add(generateReportButton);
         buttonPanel.add(viewExpensesButton);
@@ -64,43 +66,60 @@ public class ExpenseTrackerGui {
         container.add(inputPanel, BorderLayout.NORTH);
         container.add(buttonPanel, BorderLayout.CENTER);
         container.add(new JScrollPane(expensesTable), BorderLayout.SOUTH);
+
+        frame.pack(); // Ensure components are sized correctly
     }
 
     private void createListeners() {
-        addExpenseButton.addActionListener(e -> addExpense());
-        viewExpensesButton.addActionListener(e -> refreshTable());
-        deleteExpenseButton.addActionListener(e -> deleteExpense());
-        logoutButton.addActionListener(e -> frame.dispose());
-    }
+        addExpenseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String date = dateField.getText();
+                String category = categoryField.getText();
+                double amount = Double.parseDouble(amountField.getText());
 
-    private void addExpense() {
-        try {
-            String date = dateField.getText();
-            String category = categoryField.getText();
-            double amount = Double.parseDouble(amountField.getText());
+                try {
+                    int id = generateUniqueId(); // Implement this method as needed
+                    Expense expense = new Expense(id, date, category, amount);
+                    expenseManager.addExpense(expense);
+                    JOptionPane.showMessageDialog(frame, "Expense added successfully.");
+                    refreshTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error adding expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
-            Expense expense = new Expense(0, date, category, amount); // 0 as placeholder, assuming DB handles ID
-            expenseManager.addExpense(expense);
-            JOptionPane.showMessageDialog(frame, "Expense added successfully.");
-            refreshTable();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(frame, "Please enter valid amount.", "Input Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error adding expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
+        viewExpensesButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                refreshTable();
+            }
+        });
 
-    private void deleteExpense() {
-        try {
-            int id = Integer.parseInt(JOptionPane.showInputDialog(frame, "Enter ID of expense to delete:"));
-            expenseManager.deleteExpense(id);
-            JOptionPane.showMessageDialog(frame, "Expense deleted successfully.");
-            refreshTable();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(frame, "Please enter a valid ID.", "Input Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "Error deleting expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        deleteExpenseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int id = Integer.parseInt(JOptionPane.showInputDialog(frame, "Enter ID of expense to delete:"));
+                    expenseManager.deleteExpense(id);
+                    JOptionPane.showMessageDialog(frame, "Expense deleted successfully.");
+                    refreshTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error deleting expense: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        logoutButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                new LoginGui().show();
+            }
+        });
+
+        generateReportButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(frame, "Report generated (functionality to be implemented).");
+            }
+        });
     }
 
     private void refreshTable() {
@@ -115,7 +134,17 @@ public class ExpenseTrackerGui {
         }
     }
 
+    private int generateUniqueId() {
+        return (int) (Math.random() * 10000); // Simple random ID generator
+    }
+
     public void show() {
         frame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        ExpenseManager expenseManager = new ExpenseManager();
+        ExpenseTrackerGui expenseTrackerGUI = new ExpenseTrackerGui(expenseManager);
+        expenseTrackerGUI.show();
     }
 }
